@@ -244,6 +244,13 @@ function ns.InitializeOptions()
 
 	SLASH_FOREVEREXPFOOD1 = "/foreverexpfood"
 	SLASH_FOREVEREXPFOOD2 = "/fef"
-	SlashCmdList.FOREVEREXPFOOD = ns.OpenOptions
+	SlashCmdList.FOREVEREXPFOOD = function(message)
+		local command = (message or ""):lower():match("^%s*(.-)%s*$")
+		if command == "debug" then
+			ns.DebugStatus()
+		else
+			ns.OpenOptions()
+		end
+	end
 	refreshOptions()
 end

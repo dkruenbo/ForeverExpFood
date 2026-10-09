@@ -25,6 +25,77 @@ local snoozeUntil
 local scanTicker
 
 local snoozeDurations = { 1, 5, 10, 15, 30, 60 }
+local uppercaseToLowercase = {
+	["Ä"] = "ä", ["Ö"] = "ö", ["Ü"] = "ü", ["Á"] = "á", ["É"] = "é",
+	["Í"] = "í", ["Ó"] = "ó", ["Ú"] = "ú", ["À"] = "à", ["È"] = "è",
+	["Ì"] = "ì", ["Ò"] = "ò", ["Ù"] = "ù", ["Ê"] = "ê", ["Â"] = "â",
+	["Î"] = "î", ["Ô"] = "ô", ["Û"] = "û", ["Ç"] = "ç", ["Ñ"] = "ñ",
+	["Ё"] = "ё", ["А"] = "а", ["Б"] = "б", ["В"] = "в", ["Г"] = "г",
+	["Д"] = "д", ["Е"] = "е", ["Ж"] = "ж", ["З"] = "з", ["И"] = "и",
+	["Й"] = "й", ["К"] = "к", ["Л"] = "л", ["М"] = "м", ["Н"] = "н",
+	["О"] = "о", ["П"] = "п", ["Р"] = "р", ["С"] = "с", ["Т"] = "т",
+	["У"] = "у", ["Ф"] = "ф", ["Х"] = "х", ["Ц"] = "ц", ["Ч"] = "ч",
+	["Ш"] = "ш", ["Щ"] = "щ", ["Ъ"] = "ъ", ["Ы"] = "ы", ["Ь"] = "ь",
+	["Э"] = "э", ["Ю"] = "ю", ["Я"] = "я",
+}
+
+local function normalizeTooltipText(text)
+	text = text:lower()
+	for uppercase, lowercase in pairs(uppercaseToLowercase) do
+		text = text:gsub(uppercase, lowercase)
+	end
+	return text
+end
+
+local function containsAny(text, terms)
+	for _, term in ipairs(terms) do
+		if text:find(term, 1, true) then
+			return true
+		end
+	end
+	return false
+end
+
+local function hasExperienceKillContext(text)
+	return containsAny(text, ForeverExpFoodL.experienceTerms)
+		and containsAny(text, ForeverExpFoodL.killTerms)
+		and containsAny(text, ForeverExpFoodL.increaseTerms)
+end
+
+local function distanceToTerms(text, terms, percentStart, percentEnd)
+	local closestDistance = math.huge
+	for _, term in ipairs(terms) do
+		local searchStart = 1
+		while true do
+			local termStart, termEnd = text:find(term, searchStart, true)
+			if not termStart then
+				break
+			end
+
+			local distance
+			if termEnd < percentStart then
+				distance = percentStart - termEnd
+			elseif termStart > percentEnd then
+				distance = termStart - percentEnd
+			else
+				distance = 0
+			end
+			closestDistance = math.min(closestDistance, distance)
+			searchStart = termStart + 1
+		end
+	end
+	return closestDistance
+end
+
+local function tooltipLineText(line)
+	return table.concat({ line.leftText or "", line.rightText or "" }, " ")
+end
+
+local function debugPrint(message)
+	if DEFAULT_CHAT_FRAME then
+		DEFAULT_CHAT_FRAME:AddMessage("|cff80d7ffForeverExpFood debug:|r " .. message)
+	end
+end
 
 local function initializeSettings()
 	if type(ForeverExpFoodDB) ~= "table" then
@@ -70,42 +141,12 @@ local function tooltipExperienceBonusPercent(tooltipData)
 		return nil
 	end
 
-	local uppercaseToLowercase = {
-		["Ä"] = "ä", ["Ö"] = "ö", ["Ü"] = "ü", ["Á"] = "á", ["É"] = "é",
-		["Í"] = "í", ["Ó"] = "ó", ["Ú"] = "ú", ["À"] = "à", ["È"] = "è",
-		["Ì"] = "ì", ["Ò"] = "ò", ["Ù"] = "ù", ["Ê"] = "ê", ["Â"] = "â",
-		["Î"] = "î", ["Ô"] = "ô", ["Û"] = "û", ["Ç"] = "ç", ["Ñ"] = "ñ",
-		["Ё"] = "ё", ["А"] = "а", ["Б"] = "б", ["В"] = "в", ["Г"] = "г",
-		["Д"] = "д", ["Е"] = "е", ["Ж"] = "ж", ["З"] = "з", ["И"] = "и",
-		["Й"] = "й", ["К"] = "к", ["Л"] = "л", ["М"] = "м", ["Н"] = "н",
-		["О"] = "о", ["П"] = "п", ["Р"] = "р", ["С"] = "с", ["Т"] = "т",
-		["У"] = "у", ["Ф"] = "ф", ["Х"] = "х", ["Ц"] = "ц", ["Ч"] = "ч",
-		["Ш"] = "ш", ["Щ"] = "щ", ["Ъ"] = "ъ", ["Ы"] = "ы", ["Ь"] = "ь",
-		["Э"] = "э", ["Ю"] = "ю", ["Я"] = "я",
-	}
-	local function normalize(text)
-		text = text:lower()
-		for uppercase, lowercase in pairs(uppercaseToLowercase) do
-			text = text:gsub(uppercase, lowercase)
-		end
-		return text
-	end
-
-	local function containsAny(text, terms)
-		for _, term in ipairs(terms) do
-			if text:find(term, 1, true) then
-				return true
-			end
-		end
-		return false
-	end
-
 	for _, line in ipairs(tooltipData.lines) do
-		local text = normalize(table.concat({ line.leftText or "", line.rightText or "" }, " "))
-		if containsAny(text, ForeverExpFoodL.experienceTerms)
-			and containsAny(text, ForeverExpFoodL.killTerms)
-			and containsAny(text, ForeverExpFoodL.increaseTerms) then
+		local text = normalizeTooltipText(tooltipLineText(line))
+		if hasExperienceKillContext(text) then
 			local searchStart = 1
+			local closestPercent
+			local closestDistance = math.huge
 			while true do
 				local matchStart, matchEnd, percentage = text:find("(%d+)%s*%%", searchStart)
 				if not matchStart then
@@ -116,10 +157,23 @@ local function tooltipExperienceBonusPercent(tooltipData)
 				if not previousCharacter or not previousCharacter:match("[%d%.,]") then
 					local value = tonumber(percentage)
 					if value and value > 0 then
-						return value
+						local experienceDistance = distanceToTerms(
+							text, ForeverExpFoodL.experienceTerms, matchStart, matchEnd
+						)
+						local increaseDistance = distanceToTerms(
+							text, ForeverExpFoodL.increaseTerms, matchStart, matchEnd
+						)
+						local distance = experienceDistance + increaseDistance * 2
+						if distance < closestDistance then
+							closestPercent = value
+							closestDistance = distance
+						end
 					end
 				end
 				searchStart = matchEnd + 1
+			end
+			if closestPercent then
+				return closestPercent
 			end
 		end
 	end
@@ -321,6 +375,123 @@ function ns.Scan()
 		if sendReminder(message, useCustomScreenMessage) then
 			lastReminderTime = now
 		end
+	end
+end
+
+local function debugTooltipCandidates(tooltipData)
+	local candidates = {}
+	for _, line in ipairs(tooltipData and tooltipData.lines or {}) do
+		local rawText = tooltipLineText(line)
+		local text = normalizeTooltipText(rawText)
+		if rawText:find("%", 1, true)
+			or containsAny(text, ForeverExpFoodL.experienceTerms)
+			or containsAny(text, ForeverExpFoodL.killTerms) then
+			table.insert(candidates, rawText)
+		end
+	end
+	return candidates
+end
+
+function ns.DebugStatus()
+	if not DEFAULT_CHAT_FRAME then
+		return
+	end
+	if UnitAffectingCombat and UnitAffectingCombat("player") then
+		debugPrint("Leave combat before running the diagnostic.")
+		return
+	end
+	if not C_Container or not C_Container.GetContainerNumSlots or not C_Container.GetContainerItemInfo
+		or not C_TooltipInfo or not C_TooltipInfo.GetBagItem then
+		debugPrint("Bag or tooltip API is unavailable.")
+		return
+	end
+
+	invalidateBagScan()
+	local scannedItems = 0
+	local unresolvedItems = 0
+	local recognizedFoods = 0
+	local bestFoodPercent = 0
+	local bagCount = NUM_BAG_SLOTS or 0
+	debugPrint("Scanning carried bags and helpful buffs...")
+	for bagID = 0, bagCount do
+		local slotCount = C_Container.GetContainerNumSlots(bagID) or 0
+		for slot = 1, slotCount do
+			local itemInfo = C_Container.GetContainerItemInfo(bagID, slot)
+			local itemID = itemInfo and itemInfo.itemID
+			if itemID then
+				scannedItems = scannedItems + 1
+				local tooltipData = C_TooltipInfo.GetBagItem(bagID, slot)
+				if not tooltipData or type(tooltipData.lines) ~= "table" or #tooltipData.lines == 0 then
+					unresolvedItems = unresolvedItems + 1
+					debugPrint("Item " .. itemID .. ": tooltip data unavailable.")
+				else
+					local bonusPercent = tooltipExperienceBonusPercent(tooltipData)
+					foodTooltipCache[itemID] = bonusPercent or false
+					local itemName = itemInfo.itemName or (GetItemInfo and GetItemInfo(itemID)) or ("item " .. itemID)
+					if type(bonusPercent) == "number" then
+						recognizedFoods = recognizedFoods + 1
+						bestFoodPercent = math.max(bestFoodPercent, bonusPercent)
+						debugPrint(string.format("Food: %s (ID %d) -> %d%% kill XP", itemName, itemID, bonusPercent))
+					else
+						for _, candidate in ipairs(debugTooltipCandidates(tooltipData)) do
+							debugPrint(string.format("Item candidate %s (ID %d): %s", itemName, itemID, candidate))
+						end
+					end
+				end
+			end
+		end
+	end
+
+	if unresolvedItems == 0 then
+		cachedBagResult = bestFoodPercent > 0 and bestFoodPercent or false
+	else
+		cachedBagResult = nil
+	end
+	if recognizedFoods == 0 then
+		debugPrint(string.format("No XP food recognized in %d carried item(s).", scannedItems))
+	else
+		debugPrint(string.format("Recognized %d XP food item(s); best available bonus is %d%%.", recognizedFoods, bestFoodPercent))
+	end
+
+	if not C_UnitAuras or not C_UnitAuras.GetAuraDataByIndex or not C_TooltipInfo.GetUnitBuff then
+		debugPrint("Aura or unit-tooltip API is unavailable.")
+		return
+	end
+
+	local auraIndex = 1
+	local auraCount = 0
+	local recognizedBuffs = 0
+	local bestBuffPercent = 0
+	while true do
+		local aura = C_UnitAuras.GetAuraDataByIndex("player", auraIndex, "HELPFUL")
+		if not aura then
+			break
+		end
+		auraCount = auraCount + 1
+		local tooltipData = C_TooltipInfo.GetUnitBuff("player", auraIndex, "HELPFUL")
+		if not tooltipData or type(tooltipData.lines) ~= "table" or #tooltipData.lines == 0 then
+			debugPrint("Buff " .. (aura.name or tostring(aura.spellId)) .. ": tooltip data unavailable.")
+		else
+			local bonusPercent = tooltipExperienceBonusPercent(tooltipData)
+			if aura.spellId then
+				auraTooltipCache[aura.spellId] = bonusPercent or false
+			end
+			if type(bonusPercent) == "number" then
+				recognizedBuffs = recognizedBuffs + 1
+				bestBuffPercent = math.max(bestBuffPercent, bonusPercent)
+				debugPrint(string.format("Buff: %s (spell %s) -> %d%% kill XP", aura.name or "unknown", aura.spellId or "unknown", bonusPercent))
+			else
+				for _, candidate in ipairs(debugTooltipCandidates(tooltipData)) do
+					debugPrint(string.format("Buff candidate %s (spell %s): %s", aura.name or "unknown", aura.spellId or "unknown", candidate))
+				end
+			end
+		end
+		auraIndex = auraIndex + 1
+	end
+	if recognizedBuffs == 0 then
+		debugPrint(string.format("No XP kill-buff recognized among %d helpful buff(s).", auraCount))
+	else
+		debugPrint(string.format("Recognized %d XP buff(s); strongest active bonus is %d%%.", recognizedBuffs, bestBuffPercent))
 	end
 end
 

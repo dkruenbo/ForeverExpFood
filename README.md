@@ -18,6 +18,7 @@ A lightweight World of Warcraft Forever addon that helps you maintain the kill-e
 1. Download `ForeverExpFood.zip` from the repository and extract its `ForeverExpFood` folder into `World of Warcraft\_retail_\Interface\AddOns\`.
 2. Enable **ForeverExpFood** in the AddOns list and log in.
 3. Configure reminders in the in-game options. Open them with `/foreverexpfood` or `/fef`.
+4. Run `/fef debug` to print recognized XP food, active XP buffs, and relevant tooltip candidates to chat.
 
 The addon targets interface `16001`. The game client must provide the Retail APIs used by the addon.
 

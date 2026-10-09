@@ -1,7 +1,7 @@
 ForeverExpFoodLocales = {
 	enUS = {
 		chatMessage = "XP food is in your bags, but its %d%% kill experience buff is not active.",
-		noFoodMessage = "No XP food is in your bags. Pick some up to get 5% more XP from kills.",
+		noFoodMessage = "No XP food is in your bags. Pick some up to get a kill-XP bonus.",
 		chatOption = "Chat message",
 		description = "Choose how you want to be reminded when XP food is available and its buff is inactive.",
 		finishSetup = "Finish setup",
@@ -26,7 +26,7 @@ ForeverExpFoodLocales = {
 	},
 	enGB = {
 		chatMessage = "XP food is in your bags, but its %d%% kill experience buff is not active.",
-		noFoodMessage = "No XP food is in your bags. Pick some up to get 5% more XP from kills.",
+		noFoodMessage = "No XP food is in your bags. Pick some up to get a kill-XP bonus.",
 		chatOption = "Chat message",
 		description = "Choose how you want to be reminded when XP food is available and its buff is inactive.",
 		finishSetup = "Finish setup",
@@ -51,7 +51,7 @@ ForeverExpFoodLocales = {
 	},
 	deDE = {
 		chatMessage = "XP-Essen ist in deinen Taschen, aber der %d%%-Erfahrungsbonus durch getötete Gegner ist nicht aktiv.",
-		noFoodMessage = "Du hast kein XP-Essen in deinen Taschen. Besorge dir welches für 5% mehr Erfahrung durch getötete Gegner.",
+		noFoodMessage = "Du hast kein XP-Essen in deinen Taschen. Besorge dir welches für zusätzliche Erfahrung durch getötete Gegner.",
 		chatOption = "Chatnachricht",
 		description = "Lege fest, wie ForeverExpFood dich erinnert, wenn XP-Essen verfügbar und der zugehörige Stärkungseffekt nicht aktiv ist.",
 		finishSetup = "Einrichtung abschließen",
@@ -76,7 +76,7 @@ ForeverExpFoodLocales = {
 	},
 	esES = {
 		chatMessage = "Tienes comida de XP en tus bolsas, pero el beneficio de experiencia de matar un %d%% no está activo.",
-		noFoodMessage = "No tienes comida de XP en las bolsas. Consigue para obtener un 5% más de experiencia por asesinatos.",
+		noFoodMessage = "No tienes comida de XP en las bolsas. Consigue para obtener experiencia adicional por asesinatos.",
 		chatOption = "Mensaje de chat",
 		description = "Elige cómo recibir avisos cuando tengas comida de XP y su beneficio no esté activo.",
 		finishSetup = "Finalizar configuración",
@@ -101,7 +101,7 @@ ForeverExpFoodLocales = {
 	},
 	esMX = {
 		chatMessage = "Tienes comida de XP en tus bolsas, pero el beneficio de experiencia por matar un %d%% no está activo.",
-		noFoodMessage = "No tienes comida de XP en las bolsas. Consigue para obtener un 5% más de experiencia por asesinatos.",
+		noFoodMessage = "No tienes comida de XP en las bolsas. Consigue para obtener experiencia adicional por asesinatos.",
 		chatOption = "Mensaje de chat",
 		description = "Elige cómo recibir avisos cuando tengas comida de XP y su beneficio no esté activo.",
 		finishSetup = "Terminar configuración",
@@ -126,7 +126,7 @@ ForeverExpFoodLocales = {
 	},
 	frFR = {
 		chatMessage = "Vous avez de la nourriture XP dans vos sacs, mais son bonus de %d %% d'expérience sur les victimes n'est pas actif.",
-		noFoodMessage = "Vous n'avez pas de nourriture XP dans vos sacs. Procurez-vous-en pour gagner 5 % d'expérience supplémentaire sur les victimes.",
+		noFoodMessage = "Vous n'avez pas de nourriture XP dans vos sacs. Procurez-vous-en pour gagner de l'expérience supplémentaire en tuant des ennemis.",
 		chatOption = "Message dans le chat",
 		description = "Choisissez comment être averti lorsque vous avez de la nourriture XP sans son bonus actif.",
 		finishSetup = "Terminer la configuration",
@@ -151,7 +151,7 @@ ForeverExpFoodLocales = {
 	},
 	itIT = {
 		chatMessage = "Hai cibo XP nelle borse, ma il bonus del %d%% all'esperienza per le uccisioni non è attivo.",
-		noFoodMessage = "Non hai cibo XP nelle borse. Procuratene per ottenere il 5% di esperienza in più dalle uccisioni.",
+		noFoodMessage = "Non hai cibo XP nelle borse. Procuratene per ottenere esperienza bonus dalle uccisioni.",
 		chatOption = "Messaggio in chat",
 		description = "Scegli come ricevere un promemoria quando hai cibo XP ma il bonus non è attivo.",
 		finishSetup = "Completa configurazione",
@@ -176,7 +176,7 @@ ForeverExpFoodLocales = {
 	},
 	ptBR = {
 		chatMessage = "Há comida de XP nas suas bolsas, mas o bônus de %d%% de experiência por abates não está ativo.",
-		noFoodMessage = "Você não tem comida de XP nas bolsas. Consiga alguma para ganhar 5% a mais de experiência por abates.",
+		noFoodMessage = "Você não tem comida de XP nas bolsas. Consiga alguma para ganhar experiência extra por abates.",
 		chatOption = "Mensagem no chat",
 		description = "Escolha como receber lembretes quando houver comida de XP e o bônus não estiver ativo.",
 		finishSetup = "Concluir configuração",
@@ -201,7 +201,7 @@ ForeverExpFoodLocales = {
 	},
 	ruRU = {
 		chatMessage = "В сумках есть еда для опыта, но бонус %d%% к опыту за убийства не действует.",
-		noFoodMessage = "В сумках нет еды для опыта. Добудьте её, чтобы получать на 5% больше опыта за убийства.",
+		noFoodMessage = "В сумках нет еды для опыта. Добудьте её, чтобы получать дополнительный опыт за убийства.",
 		chatOption = "Сообщение в чате",
 		description = "Выберите, как получать напоминания, если в сумках есть еда для опыта, а бонус не действует.",
 		finishSetup = "Завершить настройку",
@@ -226,7 +226,7 @@ ForeverExpFoodLocales = {
 	},
 	koKR = {
 		chatMessage = "가방에 경험치 음식이 있지만 처치 경험치 %d%% 증가 효과가 활성화되지 않았습니다.",
-		noFoodMessage = "가방에 경험치 음식이 없습니다. 처치 경험치 5% 증가 효과를 위해 음식을 구해 보세요.",
+		noFoodMessage = "가방에 경험치 음식이 없습니다. 처치 경험치 보너스를 위해 음식을 구해 보세요.",
 		chatOption = "채팅 메시지",
 		description = "경험치 음식이 있고 효과가 활성화되지 않았을 때 알림 방법을 선택하세요.",
 		finishSetup = "설정 완료",
@@ -251,7 +251,7 @@ ForeverExpFoodLocales = {
 	},
 	zhCN = {
 		chatMessage = "背包中有经验加成食物，但击杀经验提高%d%%的增益尚未激活。",
-		noFoodMessage = "背包中没有经验加成食物。获取一些食物即可提高5%的击杀经验。",
+		noFoodMessage = "背包中没有经验加成食物。获取一些食物即可获得击杀经验加成。",
 		chatOption = "聊天消息",
 		description = "背包中有经验加成食物且增益未激活时，选择提醒方式。",
 		finishSetup = "完成设置",
@@ -276,7 +276,7 @@ ForeverExpFoodLocales = {
 	},
 	zhTW = {
 		chatMessage = "背包中有經驗加成食物，但擊殺經驗提高%d%%的增益尚未啟用。",
-		noFoodMessage = "背包中沒有經驗加成食物。取得一些食物即可提高5%的擊殺經驗。",
+		noFoodMessage = "背包中沒有經驗加成食物。取得一些食物即可獲得擊殺經驗加成。",
 		chatOption = "聊天訊息",
 		description = "背包中有經驗加成食物且增益未啟用時，選擇提醒方式。",
 		finishSetup = "完成設定",

@@ -28,7 +28,7 @@ Keep the initial implementation small; split files further only if the codebase 
 
 3. **Implement qualifying-food detection**
    - Inspect items in carried bags only; do not count bank storage.
-   - Identify qualifying food from a localized tooltip line describing increased kill XP and extract its integer percentage; do not hard-code the current 5% value.
+   - Identify qualifying food from a localized tooltip line describing increased kill XP and extract its integer percentage; when a line contains multiple percentages, select the one most closely associated with the experience/increase terms.
    - Select locale-specific matching terms for all standard WoW locales, with English as the fallback for unknown locales.
    - Include Mithril Head Trout as a verification example using its supplied tooltip text.
    - Cache the bag-scan result and invalidate it on bag or item-data changes; handle empty slots, unavailable item data, and asynchronous item information.
@@ -53,12 +53,14 @@ Keep the initial implementation small; split files further only if the codebase 
    - Offer a disabled-by-default option to remind players to get XP food when a reliable scan finds none and the XP buff is inactive.
    - Allow players to customize screen-alert text, duration, color, and size, preview it, move it, and reset its position.
    - Add a configurable snooze duration (1, 5, 10, 15, 30, or 60 minutes; default 1 minute) and a dismiss action scoped to the current reminder condition.
+   - Add `/fef debug` output for recognized food/buff percentages and relevant tooltip candidate lines; keep `/fef` as the options shortcut.
    - Persist settings between sessions and validate values loaded from saved variables.
 
 7. **Verify behavior in the beta client**
    - Confirm the addon loads without Lua errors and settings survive reloads.
    - Test qualifying food present/absent, matching buff active/inactive, and unrelated food or buffs.
-   - Verify 5%, 10%, and 15% XP bonuses are extracted, while unrelated 15% stat lines are rejected.
+   - Verify 5%, 10%, and 15% XP bonuses are extracted, while unrelated percentages are rejected and the XP value wins over a nearby non-XP percentage.
+   - Use `/fef debug` in the English client to inspect detected food/buff percentages and candidate tooltip lines.
    - Exercise localized matching with simulated locale strings; do not require switching the game client language.
    - Review translated tooltip phrases against reliable localized game-data references where available, and document any unverified wording.
    - Test login/reload, bag changes, and the one-minute fallback.
