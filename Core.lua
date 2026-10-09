@@ -18,6 +18,7 @@ local defaults = {
 local foodTooltipCache = {}
 local auraTooltipCache = {}
 local cachedBagResult
+local tooltipCacheTime
 local lastReminderTime
 local reminderState
 local dismissedReminderState
@@ -216,7 +217,7 @@ local function hasQualifyingFood()
 	end
 
 	if unresolvedTooltip then
-		return nil
+		return bestBonusPercent > 0 and bestBonusPercent or nil
 	end
 	cachedBagResult = bestBonusPercent > 0 and bestBonusPercent or false
 	return cachedBagResult
@@ -299,6 +300,14 @@ function ns.Scan()
 		return
 	end
 
+	local now = GetTime()
+	if not tooltipCacheTime or now - tooltipCacheTime >= 60 then
+		foodTooltipCache = {}
+		auraTooltipCache = {}
+		cachedBagResult = nil
+		tooltipCacheTime = now
+	end
+
 	local hasFood = hasQualifyingFood()
 	if hasFood == nil then
 		return
@@ -362,7 +371,6 @@ function ns.Scan()
 		return
 	end
 
-	local now = GetTime()
 	if snoozeUntil then
 		if now < snoozeUntil then
 			return
@@ -395,6 +403,33 @@ end
 function ns.DebugStatus()
 	if not DEFAULT_CHAT_FRAME then
 		return
+	end
+	if not ns.db then
+		debugPrint("Settings have not been initialized.")
+		return
+	end
+	debugPrint(string.format("Setup complete: %s; chat alerts: %s; screen alerts: %s.",
+		tostring(ns.db.configured), tostring(ns.db.chatAlerts), tostring(ns.db.screenAlerts)))
+	if not ns.db.configured then
+		debugPrint("Reminders blocked: open /fef and click Finish setup.")
+	end
+	if not ns.db.chatAlerts and not ns.db.screenAlerts then
+		debugPrint("Reminders blocked: both alert channels are disabled.")
+	end
+	local now = GetTime()
+	if snoozeUntil and now < snoozeUntil then
+		debugPrint(string.format("Reminders snoozed for %d more second(s).", math.ceil(snoozeUntil - now)))
+	end
+	if dismissedReminderState then
+		debugPrint("Dismissed reminder condition: " .. dismissedReminderState)
+	end
+	if lastReminderTime then
+		if ns.db.repeatReminders then
+			debugPrint(string.format("Next repeat eligible in %d second(s).",
+				math.max(0, math.ceil(ns.db.reminderMinutes * 60 - (now - lastReminderTime)))))
+		else
+			debugPrint("A reminder was already sent; repeat reminders are disabled.")
+		end
 	end
 	if UnitAffectingCombat and UnitAffectingCombat("player") then
 		debugPrint("Leave combat before running the diagnostic.")
@@ -446,6 +481,9 @@ function ns.DebugStatus()
 		cachedBagResult = bestFoodPercent > 0 and bestFoodPercent or false
 	else
 		cachedBagResult = nil
+	end
+	if unresolvedItems > 0 then
+		debugPrint(string.format("%d item tooltip(s) unavailable; known XP food can still trigger reminders.", unresolvedItems))
 	end
 	if recognizedFoods == 0 then
 		debugPrint(string.format("No XP food recognized in %d carried item(s).", scannedItems))

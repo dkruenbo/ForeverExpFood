@@ -22,6 +22,12 @@ A lightweight World of Warcraft Forever addon that helps you maintain the kill-e
 
 The addon targets interface `16001`. The game client must provide the Retail APIs used by the addon.
 
+## Troubleshooting
+
+If XP food is in your bags but no reminder appears, open `/fef`, click **Finish setup** if shown, and check that at least one alert is enabled. Reminders are suppressed during combat, while snoozed, or after dismissing the current reminder condition.
+
+Run `/fef debug` out of combat to inspect reminder settings, recognized food and buffs, and unavailable tooltip data. If your food is not recognized, include the debug output, food name, full tooltip text, and game language in a bug report.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
