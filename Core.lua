@@ -202,6 +202,15 @@ function ns.Scan()
 	if not ns.db then
 		return
 	end
+	if not ns.db.chatAlerts and not ns.db.screenAlerts then
+		lastReminderTime = nil
+		reminderState = nil
+		dismissedReminderState = nil
+		if ns.HideScreenAlert then
+			ns.HideScreenAlert()
+		end
+		return
+	end
 
 	local hasFood = hasQualifyingFood()
 	if hasFood == nil then
@@ -219,6 +228,9 @@ function ns.Scan()
 			lastReminderTime = nil
 			reminderState = nil
 			dismissedReminderState = nil
+			if ns.HideScreenAlert then
+				ns.HideScreenAlert()
+			end
 			return
 		end
 		state = "missing-buff"
@@ -232,6 +244,9 @@ function ns.Scan()
 			lastReminderTime = nil
 			reminderState = nil
 			dismissedReminderState = nil
+			if ns.HideScreenAlert then
+				ns.HideScreenAlert()
+			end
 			return
 		end
 		state = "missing-food"
@@ -240,6 +255,9 @@ function ns.Scan()
 		lastReminderTime = nil
 		reminderState = nil
 		dismissedReminderState = nil
+		if ns.HideScreenAlert then
+			ns.HideScreenAlert()
+		end
 		return
 	end
 
@@ -281,8 +299,7 @@ function ns.SnoozeReminders()
 	snoozeUntil = GetTime() + ns.db.snoozeMinutes * 60
 	lastReminderTime = nil
 	if ns.alertFrame then
-		ns.alertFrame.remaining = nil
-		ns.alertFrame:Hide()
+		ns.HideScreenAlert()
 	end
 end
 
@@ -292,8 +309,7 @@ function ns.DismissReminder()
 	end
 	lastReminderTime = nil
 	if ns.alertFrame then
-		ns.alertFrame.remaining = nil
-		ns.alertFrame:Hide()
+		ns.HideScreenAlert()
 	end
 end
 

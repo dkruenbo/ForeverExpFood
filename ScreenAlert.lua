@@ -116,6 +116,14 @@ function ns.RefreshAlertButtons()
 	ns.alertFrame.snoozeButton:SetText(string.format(ForeverExpFoodL.snoozeButton, ns.db.snoozeMinutes))
 end
 
+function ns.HideScreenAlert()
+	if not ns.alertFrame then
+		return
+	end
+	ns.alertFrame.remaining = nil
+	ns.alertFrame:Hide()
+end
+
 function ns.RefreshScreenAlert()
 	if not ns.alertFrame or not ns.db then
 		return

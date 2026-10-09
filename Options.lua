@@ -66,6 +66,9 @@ function ns.InitializeOptions()
 	end)
 	panel.screenCheckbox:SetScript("OnClick", function(self)
 		ns.db.screenAlerts = self:GetChecked()
+		if not ns.db.screenAlerts then
+			ns.HideScreenAlert()
+		end
 		ns.Scan()
 	end)
 	panel.repeatCheckbox:SetScript("OnClick", function(self)
