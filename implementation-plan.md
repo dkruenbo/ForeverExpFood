@@ -28,10 +28,10 @@ Keep the initial implementation small; split files further only if the codebase 
 
 3. **Implement qualifying-food detection**
    - Inspect items in carried bags only; do not count bank storage.
-   - Identify qualifying food from localized tooltip text containing the 5% kill-XP effect, rather than depending only on item IDs.
+   - Identify qualifying food from localized tooltip text containing an exact 5% kill-XP effect, rejecting other percentages such as 15% or 25%.
    - Select locale-specific matching terms for all standard WoW locales, with English as the fallback for unknown locales.
    - Include Mithril Head Trout as a verification example using its supplied tooltip text.
-   - Avoid repeated expensive tooltip work where practical, and handle empty slots, unavailable item data, and asynchronous item information.
+   - Cache the bag-scan result and invalidate it on bag or item-data changes; handle empty slots, unavailable item data, and asynchronous item information.
 
 4. **Implement active-buff detection**
    - Inspect active auras for the "Well fed" effect whose tooltip says kill XP is increased by 5%.
@@ -40,7 +40,7 @@ Keep the initial implementation small; split files further only if the codebase 
 
 5. **Coordinate scans and reminders**
    - Check once when the player enters the world or reloads the UI.
-   - Recheck when carried bags change.
+   - Recheck when carried bags change, and register player-only aura updates where supported so aura events can reuse the cached bag result.
    - Retain a one-minute periodic scan as a fallback for missed or unavailable events.
    - Notify only when qualifying food is in bags and the matching buff is absent.
    - Track reminder state so repeated scans do not accidentally spam; apply the configured repeat behavior and interval.
@@ -57,6 +57,7 @@ Keep the initial implementation small; split files further only if the codebase 
 7. **Verify behavior in the beta client**
    - Confirm the addon loads without Lua errors and settings survive reloads.
    - Test qualifying food present/absent, matching buff active/inactive, and unrelated food or buffs.
+   - Verify exact 5% matching and reject 15%/25% tooltip values.
    - Exercise localized matching with simulated locale strings; do not require switching the game client language.
    - Review translated tooltip phrases against reliable localized game-data references where available, and document any unverified wording.
    - Test login/reload, bag changes, and the one-minute fallback.

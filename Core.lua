@@ -17,6 +17,7 @@ local defaults = {
 
 local foodTooltipCache = {}
 local auraTooltipCache = {}
+local cachedBagResult
 local lastReminderTime
 local reminderState
 local dismissedReminderState
@@ -106,13 +107,24 @@ local function tooltipHasExperienceBonus(tooltipData)
 		return false
 	end
 
+	local hasFivePercentBonus = false
+	for percentage in description:gmatch("(%d+)%s*%%") do
+		if tonumber(percentage) == 5 then
+			hasFivePercentBonus = true
+			break
+		end
+	end
+
 	return containsAny(ForeverExpFoodL.experienceTerms)
 		and containsAny(ForeverExpFoodL.killTerms)
 		and containsAny(ForeverExpFoodL.increaseTerms)
-		and description:find("5%", 1, true) ~= nil
+		and hasFivePercentBonus
 end
 
 local function hasQualifyingFood()
+	if cachedBagResult ~= nil then
+		return cachedBagResult
+	end
 	if not C_Container or not C_Container.GetContainerNumSlots or not C_Container.GetContainerItemInfo then
 		return nil
 	end
@@ -137,6 +149,7 @@ local function hasQualifyingFood()
 					end
 				end
 				if isQualifyingFood then
+					cachedBagResult = true
 					return true
 				end
 			end
@@ -146,7 +159,15 @@ local function hasQualifyingFood()
 	if unresolvedTooltip then
 		return nil
 	end
+	cachedBagResult = false
 	return false
+end
+
+local function invalidateBagScan(itemID)
+	cachedBagResult = nil
+	if itemID then
+		foodTooltipCache[itemID] = nil
+	end
 end
 
 local function hasExperienceBuff()
@@ -318,8 +339,12 @@ eventFrame:RegisterEvent("ADDON_LOADED")
 eventFrame:RegisterEvent("PLAYER_LOGIN")
 eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 eventFrame:RegisterEvent("BAG_UPDATE_DELAYED")
-eventFrame:RegisterEvent("UNIT_AURA")
 eventFrame:RegisterEvent("GET_ITEM_INFO_RECEIVED")
+if eventFrame.RegisterUnitEvent then
+	eventFrame:RegisterUnitEvent("UNIT_AURA", "player")
+else
+	eventFrame:RegisterEvent("UNIT_AURA")
+end
 
 eventFrame:SetScript("OnEvent", function(_, event, arg1)
 	if event == "ADDON_LOADED" and arg1 == addonName then
@@ -328,6 +353,7 @@ eventFrame:SetScript("OnEvent", function(_, event, arg1)
 			ns.InitializeOptions()
 		end
 	elseif event == "PLAYER_LOGIN" then
+		invalidateBagScan()
 		if C_Timer and C_Timer.NewTicker then
 			scanTicker = C_Timer.NewTicker(60, ns.Scan)
 		else
@@ -348,14 +374,18 @@ eventFrame:SetScript("OnEvent", function(_, event, arg1)
 			end
 		end
 		ns.Scan()
+	elseif event == "BAG_UPDATE_DELAYED" then
+		invalidateBagScan()
+		ns.Scan()
+	elseif event == "PLAYER_ENTERING_WORLD" then
+		invalidateBagScan()
+		ns.Scan()
 	elseif event == "UNIT_AURA" then
 		if arg1 == "player" then
 			ns.Scan()
 		end
 	elseif event == "GET_ITEM_INFO_RECEIVED" then
-		if arg1 then
-			foodTooltipCache[arg1] = nil
-		end
+		invalidateBagScan(arg1)
 		ns.Scan()
 	else
 		ns.Scan()
