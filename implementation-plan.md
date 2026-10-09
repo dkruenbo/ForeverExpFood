@@ -2,7 +2,7 @@
 
 ## Goal
 
-Build a lightweight World of Warcraft Forever addon for the beta client, using the Retail API where supported. It detects food whose tooltip grants 5% additional experience from kills and reminds the player when the corresponding "Well fed" buff is not active.
+Build a lightweight World of Warcraft Forever addon for the beta client, using the Retail API where supported. It detects food whose tooltip grants additional experience from kills, extracts the percentage, and reminds the player when the active XP food buff is weaker than the best available food bonus.
 
 ## Proposed Addon Structure
 
@@ -28,22 +28,22 @@ Keep the initial implementation small; split files further only if the codebase 
 
 3. **Implement qualifying-food detection**
    - Inspect items in carried bags only; do not count bank storage.
-   - Identify qualifying food from localized tooltip text containing an exact 5% kill-XP effect, rejecting other percentages such as 15% or 25%.
+   - Identify qualifying food from a localized tooltip line describing increased kill XP and extract its integer percentage; do not hard-code the current 5% value.
    - Select locale-specific matching terms for all standard WoW locales, with English as the fallback for unknown locales.
    - Include Mithril Head Trout as a verification example using its supplied tooltip text.
    - Cache the bag-scan result and invalidate it on bag or item-data changes; handle empty slots, unavailable item data, and asynchronous item information.
 
 4. **Implement active-buff detection**
-   - Inspect active auras for the "Well fed" effect whose tooltip says kill XP is increased by 5%.
+   - Inspect active auras for the "Well fed" effect and extract its kill-XP percentage.
    - Use the beta-supported aura data/API and verify whether the descriptive text is available without constructing a tooltip.
-   - Ensure unrelated "Well fed" buffs do not suppress the reminder unless their effect matches the XP bonus.
+   - Ensure unrelated buffs do not suppress reminders; an XP buff suppresses only when its percentage is equal to or higher than the best available food bonus.
 
 5. **Coordinate scans and reminders**
    - Check once when the player enters the world or reloads the UI.
    - Recheck when carried bags change, and register player-only aura updates where supported so aura events can reuse the cached bag result.
    - Retain a one-minute periodic scan as a fallback for missed or unavailable events.
    - Suppress reminders and hide visible screen alerts during combat; rescan immediately when combat ends.
-   - Notify only when qualifying food is in bags and the matching buff is absent.
+   - Notify only when qualifying food is in bags and the active XP buff is absent or weaker than the best food bonus.
    - Track reminder state so repeated scans do not accidentally spam; apply the configured repeat behavior and interval.
 
 6. **Add preferences and setup**
@@ -58,7 +58,7 @@ Keep the initial implementation small; split files further only if the codebase 
 7. **Verify behavior in the beta client**
    - Confirm the addon loads without Lua errors and settings survive reloads.
    - Test qualifying food present/absent, matching buff active/inactive, and unrelated food or buffs.
-   - Verify exact 5% matching and reject 15%/25% tooltip values.
+   - Verify 5%, 10%, and 15% XP bonuses are extracted, while unrelated 15% stat lines are rejected.
    - Exercise localized matching with simulated locale strings; do not require switching the game client language.
    - Review translated tooltip phrases against reliable localized game-data references where available, and document any unverified wording.
    - Test login/reload, bag changes, and the one-minute fallback.
@@ -69,7 +69,7 @@ Keep the initial implementation small; split files further only if the codebase 
 
 - The addon loads in the target beta client without errors.
 - Qualifying food in carried bags is detected from its tooltip effect; bank items are ignored.
-- A matching 5% kill-XP "Well fed" buff suppresses reminders, while unrelated buffs do not.
+- The XP percentage is extracted dynamically; an equal or stronger kill-XP "Well fed" buff suppresses reminders, while unrelated buffs do not.
 - Checks run on login/reload, after bag changes, and at least once per minute.
 - No reminders are sent during combat; pending conditions are checked immediately after combat ends.
 - Players can choose preferences during first-run setup and change them in the options panel.

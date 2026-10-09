@@ -1,12 +1,12 @@
 # ForeverExpFood
 
-A lightweight World of Warcraft Forever addon that helps you maintain the 5% kill-experience bonus from qualifying food.
+A lightweight World of Warcraft Forever addon that helps you maintain the kill-experience bonus from qualifying food. It reads the percentage from the tooltip; 5% is the current example, not a hard-coded limit.
 
 ## Features
 
-- Scans carried bags for food whose tooltip grants 5% additional experience from kills.
-- Checks whether the corresponding `Well Fed` XP buff is active.
-- Sends configurable chat and screen reminders when food is available but the buff is inactive.
+- Scans carried bags for food whose tooltip grants additional experience from kills and extracts its percentage.
+- Compares food bonuses with the active `Well Fed` XP buff; an equal or stronger buff suppresses reminders.
+- Sends configurable chat and screen reminders when the active buff is weaker than the best food bonus.
 - Optionally reminds you when no qualifying food is in your bags.
 - Provides a movable screen alert with custom text, duration, size, and color.
 - Supports snoozing reminders or dismissing the current reminder condition.

@@ -144,7 +144,7 @@ function ns.InitializeOptions()
 	panel.previewButton:SetScript("OnClick", function()
 		panel.messageBox:ClearFocus()
 		local message = ns.db.screenMessage
-		ns.ShowScreenAlert(message ~= "" and message or L.chatMessage, true)
+		ns.ShowScreenAlert(message ~= "" and message or string.format(L.chatMessage, 5), true)
 	end)
 
 	local durationLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")

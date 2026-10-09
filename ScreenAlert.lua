@@ -91,7 +91,7 @@ function ns.ShowScreenAlert(message, isPreview)
 		displayMessage = ns.db.screenMessage
 	end
 	if displayMessage == "" then
-		displayMessage = ForeverExpFoodL.chatMessage
+		displayMessage = string.format(ForeverExpFoodL.chatMessage, 5)
 	end
 	frame.text:SetText(displayMessage)
 	if isPreview then
@@ -129,8 +129,6 @@ function ns.RefreshScreenAlert()
 		return
 	end
 
-	local message = ns.db.screenMessage
-	ns.alertFrame.text:SetText(message ~= "" and message or ForeverExpFoodL.chatMessage)
 	updateAlertAppearance(ns.alertFrame)
 	ns.alertFrame.remaining = ns.db.screenDuration
 end

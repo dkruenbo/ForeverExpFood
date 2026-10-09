@@ -65,26 +65,16 @@ local function initializeSettings()
 	ns.db = ForeverExpFoodDB
 end
 
-local function tooltipHasExperienceBonus(tooltipData)
+local function tooltipExperienceBonusPercent(tooltipData)
 	if not tooltipData or type(tooltipData.lines) ~= "table" or #tooltipData.lines == 0 then
 		return nil
 	end
 
-	local text = {}
-	for _, line in ipairs(tooltipData.lines) do
-		if line.leftText then
-			table.insert(text, line.leftText)
-		end
-		if line.rightText then
-			table.insert(text, line.rightText)
-		end
-	end
-
-	local description = table.concat(text, " "):lower()
 	local uppercaseToLowercase = {
-		["Ä"] = "ä", ["Ö"] = "ö", ["Ü"] = "ü", ["É"] = "é", ["È"] = "è",
-		["Ê"] = "ê", ["À"] = "à", ["Â"] = "â", ["Ç"] = "ç", ["Î"] = "î",
-		["Ï"] = "ï", ["Ô"] = "ô", ["Ù"] = "ù", ["Û"] = "û", ["Ñ"] = "ñ",
+		["Ä"] = "ä", ["Ö"] = "ö", ["Ü"] = "ü", ["Á"] = "á", ["É"] = "é",
+		["Í"] = "í", ["Ó"] = "ó", ["Ú"] = "ú", ["À"] = "à", ["È"] = "è",
+		["Ì"] = "ì", ["Ò"] = "ò", ["Ù"] = "ù", ["Ê"] = "ê", ["Â"] = "â",
+		["Î"] = "î", ["Ô"] = "ô", ["Û"] = "û", ["Ç"] = "ç", ["Ñ"] = "ñ",
 		["Ё"] = "ё", ["А"] = "а", ["Б"] = "б", ["В"] = "в", ["Г"] = "г",
 		["Д"] = "д", ["Е"] = "е", ["Ж"] = "ж", ["З"] = "з", ["И"] = "и",
 		["Й"] = "й", ["К"] = "к", ["Л"] = "л", ["М"] = "м", ["Н"] = "н",
@@ -93,32 +83,47 @@ local function tooltipHasExperienceBonus(tooltipData)
 		["Ш"] = "ш", ["Щ"] = "щ", ["Ъ"] = "ъ", ["Ы"] = "ы", ["Ь"] = "ь",
 		["Э"] = "э", ["Ю"] = "ю", ["Я"] = "я",
 	}
-	for uppercase, lowercase in pairs(uppercaseToLowercase) do
-		description = description:gsub(uppercase, lowercase)
+	local function normalize(text)
+		text = text:lower()
+		for uppercase, lowercase in pairs(uppercaseToLowercase) do
+			text = text:gsub(uppercase, lowercase)
+		end
+		return text
 	end
-	description = description:gsub("%s+%%", "%%")
 
-	local function containsAny(terms)
+	local function containsAny(text, terms)
 		for _, term in ipairs(terms) do
-			if description:find(term, 1, true) then
+			if text:find(term, 1, true) then
 				return true
 			end
 		end
 		return false
 	end
 
-	local hasFivePercentBonus = false
-	for percentage in description:gmatch("(%d+)%s*%%") do
-		if tonumber(percentage) == 5 then
-			hasFivePercentBonus = true
-			break
+	for _, line in ipairs(tooltipData.lines) do
+		local text = normalize(table.concat({ line.leftText or "", line.rightText or "" }, " "))
+		if containsAny(text, ForeverExpFoodL.experienceTerms)
+			and containsAny(text, ForeverExpFoodL.killTerms)
+			and containsAny(text, ForeverExpFoodL.increaseTerms) then
+			local searchStart = 1
+			while true do
+				local matchStart, matchEnd, percentage = text:find("(%d+)%s*%%", searchStart)
+				if not matchStart then
+					break
+				end
+
+				local previousCharacter = matchStart > 1 and text:sub(matchStart - 1, matchStart - 1)
+				if not previousCharacter or not previousCharacter:match("[%d%.,]") then
+					local value = tonumber(percentage)
+					if value and value > 0 then
+						return value
+					end
+				end
+				searchStart = matchEnd + 1
+			end
 		end
 	end
-
-	return containsAny(ForeverExpFoodL.experienceTerms)
-		and containsAny(ForeverExpFoodL.killTerms)
-		and containsAny(ForeverExpFoodL.increaseTerms)
-		and hasFivePercentBonus
+	return false
 end
 
 local function hasQualifyingFood()
@@ -130,6 +135,7 @@ local function hasQualifyingFood()
 	end
 
 	local unresolvedTooltip = false
+	local bestBonusPercent = 0
 	local bagCount = NUM_BAG_SLOTS or 0
 	for bagID = 0, bagCount do
 		local slotCount = C_Container.GetContainerNumSlots(bagID) or 0
@@ -137,20 +143,19 @@ local function hasQualifyingFood()
 			local itemInfo = C_Container.GetContainerItemInfo(bagID, slot)
 			local itemID = itemInfo and itemInfo.itemID
 			if itemID then
-				local isQualifyingFood = foodTooltipCache[itemID]
-				if isQualifyingFood == nil then
+				local bonusPercent = foodTooltipCache[itemID]
+				if bonusPercent == nil then
 					local tooltipData = C_TooltipInfo and C_TooltipInfo.GetBagItem
 						and C_TooltipInfo.GetBagItem(bagID, slot)
 					if tooltipData and type(tooltipData.lines) == "table" and #tooltipData.lines > 0 then
-						isQualifyingFood = tooltipHasExperienceBonus(tooltipData)
-						foodTooltipCache[itemID] = isQualifyingFood
+						bonusPercent = tooltipExperienceBonusPercent(tooltipData)
+						foodTooltipCache[itemID] = bonusPercent or false
 					else
 						unresolvedTooltip = true
 					end
 				end
-				if isQualifyingFood then
-					cachedBagResult = true
-					return true
+				if type(bonusPercent) == "number" and bonusPercent > bestBonusPercent then
+					bestBonusPercent = bonusPercent
 				end
 			end
 		end
@@ -159,8 +164,8 @@ local function hasQualifyingFood()
 	if unresolvedTooltip then
 		return nil
 	end
-	cachedBagResult = false
-	return false
+	cachedBagResult = bestBonusPercent > 0 and bestBonusPercent or false
+	return cachedBagResult
 end
 
 local function invalidateBagScan(itemID)
@@ -178,29 +183,30 @@ local function hasExperienceBuff()
 
 	local index = 1
 	local unresolvedTooltip = false
+	local bestBonusPercent = 0
 	while true do
 		local aura = C_UnitAuras.GetAuraDataByIndex("player", index, "HELPFUL")
 		if not aura then
 			if unresolvedTooltip then
 				return nil
 			end
-			return false
+			return bestBonusPercent > 0 and bestBonusPercent or false
 		end
 
-		local hasExperienceBonus = aura.spellId and auraTooltipCache[aura.spellId]
-		if hasExperienceBonus == nil then
+		local bonusPercent = aura.spellId and auraTooltipCache[aura.spellId]
+		if bonusPercent == nil then
 			local tooltipData = C_TooltipInfo.GetUnitBuff("player", index, "HELPFUL")
 			if tooltipData and type(tooltipData.lines) == "table" and #tooltipData.lines > 0 then
-				hasExperienceBonus = tooltipHasExperienceBonus(tooltipData)
+				bonusPercent = tooltipExperienceBonusPercent(tooltipData)
 				if aura.spellId then
-					auraTooltipCache[aura.spellId] = hasExperienceBonus
+					auraTooltipCache[aura.spellId] = bonusPercent or false
 				end
 			else
 				unresolvedTooltip = true
 			end
 		end
-		if hasExperienceBonus then
-			return true
+		if type(bonusPercent) == "number" and bonusPercent > bestBonusPercent then
+			bestBonusPercent = bonusPercent
 		end
 		index = index + 1
 	end
@@ -251,7 +257,7 @@ function ns.Scan()
 		local hasBuff = hasExperienceBuff()
 		if hasBuff == nil then
 			return
-		elseif hasBuff then
+		elseif type(hasBuff) == "number" and hasBuff >= hasFood then
 			lastReminderTime = nil
 			reminderState = nil
 			dismissedReminderState = nil
@@ -260,14 +266,14 @@ function ns.Scan()
 			end
 			return
 		end
-		state = "missing-buff"
-		message = ForeverExpFoodL.chatMessage
+		state = "missing-buff:" .. hasFood
+		message = string.format(ForeverExpFoodL.chatMessage, hasFood)
 		useCustomScreenMessage = true
 	elseif ns.db.remindWhenNoFood then
 		local hasBuff = hasExperienceBuff()
 		if hasBuff == nil then
 			return
-		elseif hasBuff then
+		elseif type(hasBuff) == "number" and hasBuff > 0 then
 			lastReminderTime = nil
 			reminderState = nil
 			dismissedReminderState = nil

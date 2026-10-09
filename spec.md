@@ -1,13 +1,13 @@
 Lightweight World of Warcraft Forever addon using the Retail API, targeting the new beta client.
 
-The addon helps players maximize XP from kills by tracking food that grants a 5% experience bonus. It checks the player's bags and reminds them to eat qualifying food when its buff is not active.
+The addon helps players maximize XP from kills by tracking food that grants an experience bonus. It reads the percentage from the localized tooltip; 5% is the current example, not a hard-coded limit. It compares the best bonus available in bags with the active XP food buff and reminds the player when the buff is weaker or missing.
 
 ## Features
 
 - Scans the player's bags in the background once per minute.
 - Suppresses reminders during combat, hides a visible alert when combat begins, and checks again when combat ends.
-- Detects qualifying food by its tooltip text, including the effect "experience gained from kills is increased by 5%." Mithril Head Trout is one example.
-- Detects the active effect from the "Well fed" buff whose tooltip says "Experience gained from kills increased by 5%."
+- Detects qualifying food by its localized tooltip line describing increased experience from kills and extracts its integer percentage. Mithril Head Trout's current 5% effect is one example.
+- Detects the percentage from the matching "Well fed" XP buff; a buff equal to or stronger than the best food bonus suppresses the reminder.
 - Lets players choose reminder preferences during setup and change them later in an in-game options panel.
 - Supports chat and screen alerts, each independently toggleable.
 - Lets players customize whether and how often reminders repeat.
@@ -25,4 +25,4 @@ The addon helps players maximize XP from kills by tracking food that grants a 5%
 - Optionally enable reminders to restock XP food when none is available in bags.
 - Use the options panel to customize, preview, and reposition the screen alert.
 - Snooze a reminder temporarily or dismiss the current reminder condition from the screen alert.
-- The addon automatically checks bags once per minute and reminds the player when qualifying food is available and the matching XP buff is inactive.
+- The addon automatically checks bags once per minute and reminds the player when qualifying food is available and the active XP buff is weaker than the best available food bonus.
