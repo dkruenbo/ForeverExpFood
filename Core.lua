@@ -355,7 +355,11 @@ else
 end
 
 eventFrame:SetScript("OnEvent", function(_, event, arg1)
-	if event == "ADDON_LOADED" and arg1 == addonName then
+	if event == "ADDON_LOADED" then
+		if arg1 ~= addonName then
+			return
+		end
+		eventFrame:UnregisterEvent("ADDON_LOADED")
 		initializeSettings()
 		if ns.InitializeOptions then
 			ns.InitializeOptions()
@@ -401,8 +405,6 @@ eventFrame:SetScript("OnEvent", function(_, event, arg1)
 		end
 	elseif event == "GET_ITEM_INFO_RECEIVED" then
 		invalidateBagScan(arg1)
-		ns.Scan()
-	else
 		ns.Scan()
 	end
 end)
