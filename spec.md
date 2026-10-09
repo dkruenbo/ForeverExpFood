@@ -7,8 +7,10 @@ The addon helps players maximize XP from kills by tracking food that grants an e
 - Scans the player's bags in the background once per minute.
 - Suppresses reminders during combat, hides a visible alert when combat begins, and checks again when combat ends.
 - Detects qualifying food by its localized tooltip line describing increased experience from kills and extracts its integer percentage. Mithril Head Trout's current 5% effect is one example.
+- If a tooltip line has multiple percentages, selects the one most closely associated with its experience-increase wording.
 - Detects the percentage from the matching "Well fed" XP buff; a buff equal to or stronger than the best food bonus suppresses the reminder.
 - Lets players choose reminder preferences during setup and change them later in an in-game options panel.
+- Provides `/fef debug` to report recognized XP food, active XP buffs, and relevant tooltip candidate lines.
 - Supports chat and screen alerts, each independently toggleable.
 - Lets players customize whether and how often reminders repeat.
 - Offers an opt-in reminder when no qualifying XP food is in the player's bags and the XP buff is inactive; this option is off by default.
@@ -24,5 +26,6 @@ The addon helps players maximize XP from kills by tracking food that grants an e
 - Choose reminder preferences during setup, or adjust them later in the options panel.
 - Optionally enable reminders to restock XP food when none is available in bags.
 - Use the options panel to customize, preview, and reposition the screen alert.
+- Run `/fef debug` to inspect food and buff detection during testing.
 - Snooze a reminder temporarily or dismiss the current reminder condition from the screen alert.
 - The addon automatically checks bags once per minute and reminds the player when qualifying food is available and the active XP buff is weaker than the best available food bonus.
