@@ -8,8 +8,8 @@ Build a lightweight World of Warcraft Forever addon for the beta client, using t
 
 - `ForeverExpFood.toc`: addon metadata, interface version `16001`, saved-variable declaration, and Lua file load order.
 - `Core.lua`: event registration, scan scheduling, inventory and aura checks, and reminder coordination.
-- `Options.lua`: in-game settings panel, first-run preference setup, and saved settings.
-- `ScreenAlert.lua`: movable, timed screen-alert frame with saved appearance and position.
+- `Options.lua`: in-game settings panel and saved preferences, with a scan when the panel closes.
+- `ScreenAlert.lua`: movable screen-alert frame with timed or unlimited duration and saved appearance and position.
 - `Locale.lua`: user-facing strings and tooltip-matching terms for all standard WoW locales.
 
 Keep the initial implementation small; split files further only if the codebase or beta API requires it.
@@ -23,7 +23,7 @@ Keep the initial implementation small; split files further only if the codebase 
 
 2. **Create the addon skeleton**
    - Add the `.toc` and Lua entry points with a single event handler/bootstrap path.
-   - Declare a saved-variable table for preferences and setup completion.
+   - Declare a saved-variable table for preferences.
    - Initialize missing settings with validated defaults while preserving existing user settings after updates.
 
 3. **Implement qualifying-food detection**
@@ -46,12 +46,13 @@ Keep the initial implementation small; split files further only if the codebase 
    - Notify only when qualifying food is in bags and the active XP buff is absent or weaker than the best food bonus.
    - Track reminder state so repeated scans do not accidentally spam; apply the configured repeat behavior and interval.
 
-6. **Add preferences and setup**
-   - Present a first-run setup flow that asks how the player wants to be reminded.
-   - Provide an in-game options panel for later changes.
+6. **Add preferences**
+   - Start reminders with default preferences without automatically opening options or requiring setup.
+   - Provide an in-game options panel and trigger a scan when it closes.
    - Include independent chat and screen-alert toggles and a control for whether and how often reminders repeat.
    - Offer a disabled-by-default option to remind players to get XP food when a reliable scan finds none and the XP buff is inactive.
    - Allow players to customize screen-alert text, duration, color, and size, preview it, move it, and reset its position.
+   - Preserve 1-20 second durations and offer Unlimited at the rightmost slider position, stored as zero; previews must still time out.
    - Add a configurable snooze duration (1, 5, 10, 15, 30, or 60 minutes; default 1 minute) and a dismiss action scoped to the current reminder condition.
    - Add `/fef debug` output for recognized food/buff percentages and relevant tooltip candidate lines; keep `/fef` as the options shortcut.
    - Persist settings between sessions and validate values loaded from saved variables.
@@ -74,10 +75,11 @@ Keep the initial implementation small; split files further only if the codebase 
 - The XP percentage is extracted dynamically; an equal or stronger kill-XP "Well fed" buff suppresses reminders, while unrelated buffs do not.
 - Checks run on login/reload, after bag changes, and at least once per minute.
 - No reminders are sent during combat; pending conditions are checked immediately after combat ends.
-- Players can choose preferences during first-run setup and change them in the options panel.
+- Reminders work immediately with defaults, options do not open automatically, and closing the options panel triggers a scan.
 - Chat and screen alerts can be toggled independently, and repeat behavior is configurable and persists across sessions.
 - Repeated scans do not cause reminders more frequently than the configured behavior allows.
 - Screen-alert settings and position persist, and the alert can be previewed and repositioned.
+- The rightmost duration slider position disables the reminder timeout; finite durations remain 1-20 seconds, and previews remain timed.
 - The optional no-food reminder is off by default, uses the selected alert channels and repeat interval, and is suppressed while the XP buff is active or scan data is unresolved.
 - Snooze pauses both alert channels until the selected duration elapses, then resumes on the next scan; dismiss suppresses only the current condition until it changes or resolves.
 - Snooze is available in 1, 5, 10, 15, 30, and 60 minute choices, defaults to 1 minute, and the alert buttons are hidden in preview mode.

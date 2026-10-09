@@ -104,7 +104,8 @@ function ns.ShowScreenAlert(message, isPreview)
 		frame.dismissButton:Show()
 	end
 	updateAlertAppearance(frame)
-	frame.remaining = ns.db.screenDuration
+	frame.isPreview = isPreview
+	frame.remaining = ns.db.screenDuration > 0 and ns.db.screenDuration or (isPreview and 5 or nil)
 	frame:Show()
 	return true
 end
@@ -130,7 +131,8 @@ function ns.RefreshScreenAlert()
 	end
 
 	updateAlertAppearance(ns.alertFrame)
-	ns.alertFrame.remaining = ns.db.screenDuration
+	ns.alertFrame.remaining = ns.db.screenDuration > 0 and ns.db.screenDuration
+		or (ns.alertFrame.isPreview and 5 or nil)
 end
 
 function ns.ResetScreenAlertPosition()

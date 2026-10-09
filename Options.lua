@@ -22,10 +22,9 @@ local function refreshOptions()
 	panel.intervalSlider:SetEnabled(ns.db.repeatReminders)
 	UIDropDownMenu_SetSelectedValue(panel.snoozeDropdown, ns.db.snoozeMinutes)
 	panel.messageBox:SetText(ns.db.screenMessage)
-	panel.durationSlider:SetValue(ns.db.screenDuration)
+	panel.durationSlider:SetValue(ns.db.screenDuration == 0 and 21 or ns.db.screenDuration)
 	panel.scaleSlider:SetValue(ns.db.screenScale * 100)
 	panel.colorSwatch:SetColorTexture(ns.db.screenColor.r, ns.db.screenColor.g, ns.db.screenColor.b)
-	panel.finishButton:SetShown(not ns.db.configured)
 end
 
 function ns.OpenOptions()
@@ -149,18 +148,21 @@ function ns.InitializeOptions()
 
 	local durationLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 	durationLabel:SetPoint("TOPLEFT", panel.messageBox, "BOTTOMLEFT", 0, -24)
-	durationLabel:SetText(string.format(L.screenDuration, ns.db.screenDuration))
+	durationLabel:SetText(ns.db.screenDuration == 0 and L.screenDurationUnlimited
+		or string.format(L.screenDuration, ns.db.screenDuration))
 
 	panel.durationSlider = CreateFrame("Slider", "ForeverExpFoodDurationSlider", panel, "OptionsSliderTemplate")
 	panel.durationSlider:SetPoint("TOPLEFT", durationLabel, "BOTTOMLEFT", 0, -12)
-	panel.durationSlider:SetMinMaxValues(1, 20)
+	panel.durationSlider:SetMinMaxValues(1, 21)
 	panel.durationSlider:SetValueStep(1)
 	panel.durationSlider:SetObeyStepOnDrag(true)
 	panel.durationSlider:SetWidth(260)
 	panel.durationSlider:SetScript("OnValueChanged", function(_, value)
 		local seconds = math.floor(value + 0.5)
-		ns.db.screenDuration = seconds
-		durationLabel:SetText(string.format(L.screenDuration, seconds))
+		ns.db.screenDuration = seconds == 21 and 0 or seconds
+		durationLabel:SetText(ns.db.screenDuration == 0 and L.screenDurationUnlimited
+			or string.format(L.screenDuration, ns.db.screenDuration))
+		ns.RefreshScreenAlert()
 	end)
 
 	local scaleLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
@@ -223,17 +225,13 @@ function ns.InitializeOptions()
 		ns.ResetScreenAlertPosition()
 	end)
 
-	panel.finishButton = CreateFrame("Button", "ForeverExpFoodFinishSetupButton", panel, "UIPanelButtonTemplate")
-	panel.finishButton:SetSize(150, 24)
-	panel.finishButton:SetPoint("TOPLEFT", panel.scaleSlider, "BOTTOMLEFT", 0, -80)
-	panel.finishButton:SetText(L.finishSetup)
-	panel.finishButton:SetScript("OnClick", function()
-		ns.db.configured = true
-		panel.finishButton:Hide()
+	panel:SetScript("OnShow", refreshOptions)
+	panel:SetScript("OnHide", function()
+		if ns.alertFrame and ns.alertFrame.isPreview then
+			ns.HideScreenAlert()
+		end
 		ns.Scan()
 	end)
-
-	panel:SetScript("OnShow", refreshOptions)
 	if Settings and Settings.RegisterCanvasLayoutCategory and Settings.RegisterAddOnCategory then
 		ns.settingsCategory = Settings.RegisterCanvasLayoutCategory(panel, "ForeverExpFood")
 		Settings.RegisterAddOnCategory(ns.settingsCategory)

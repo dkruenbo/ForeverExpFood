@@ -12,7 +12,6 @@ local defaults = {
 	screenScale = 1,
 	alertOffsetX = 0,
 	alertOffsetY = 120,
-	configured = false,
 }
 
 local foodTooltipCache = {}
@@ -120,7 +119,9 @@ local function initializeSettings()
 	if not validSnoozeDuration then
 		ForeverExpFoodDB.snoozeMinutes = defaults.snoozeMinutes
 	end
-	ForeverExpFoodDB.screenDuration = math.max(1, math.min(20, math.floor(ForeverExpFoodDB.screenDuration)))
+	if ForeverExpFoodDB.screenDuration ~= 0 then
+		ForeverExpFoodDB.screenDuration = math.max(1, math.min(20, math.floor(ForeverExpFoodDB.screenDuration)))
+	end
 	ForeverExpFoodDB.screenScale = math.max(0.75, math.min(1.5, ForeverExpFoodDB.screenScale))
 	if type(ForeverExpFoodDB.screenColor) ~= "table" then
 		ForeverExpFoodDB.screenColor = { r = 1, g = 0.82, b = 0 }
@@ -357,9 +358,6 @@ function ns.Scan()
 		return
 	end
 
-	if not ns.db.configured then
-		return
-	end
 	if reminderState ~= state then
 		reminderState = state
 		lastReminderTime = nil
@@ -408,11 +406,8 @@ function ns.DebugStatus()
 		debugPrint("Settings have not been initialized.")
 		return
 	end
-	debugPrint(string.format("Setup complete: %s; chat alerts: %s; screen alerts: %s.",
-		tostring(ns.db.configured), tostring(ns.db.chatAlerts), tostring(ns.db.screenAlerts)))
-	if not ns.db.configured then
-		debugPrint("Reminders blocked: open /fef and click Finish setup.")
-	end
+	debugPrint(string.format("Chat alerts: %s; screen alerts: %s.",
+		tostring(ns.db.chatAlerts), tostring(ns.db.screenAlerts)))
 	if not ns.db.chatAlerts and not ns.db.screenAlerts then
 		debugPrint("Reminders blocked: both alert channels are disabled.")
 	end
@@ -592,13 +587,6 @@ eventFrame:SetScript("OnEvent", function(_, event, arg1)
 					ns.Scan()
 				end
 			end)
-		end
-		if not ns.db.configured and ns.OpenOptions then
-			if C_Timer and C_Timer.After then
-				C_Timer.After(2, ns.OpenOptions)
-			else
-				ns.OpenOptions()
-			end
 		end
 		ns.Scan()
 	elseif event == "BAG_UPDATE_DELAYED" then
