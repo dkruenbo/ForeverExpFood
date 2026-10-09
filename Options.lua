@@ -240,6 +240,7 @@ function ns.InitializeOptions()
 	end
 
 	SLASH_FOREVEREXPFOOD1 = "/foreverexpfood"
+	SLASH_FOREVEREXPFOOD2 = "/fef"
 	SlashCmdList.FOREVEREXPFOOD = ns.OpenOptions
 	refreshOptions()
 end
