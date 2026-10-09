@@ -223,6 +223,12 @@ function ns.Scan()
 	if not ns.db then
 		return
 	end
+	if UnitAffectingCombat and UnitAffectingCombat("player") then
+		if ns.HideScreenAlert then
+			ns.HideScreenAlert()
+		end
+		return
+	end
 	if not ns.db.chatAlerts and not ns.db.screenAlerts then
 		lastReminderTime = nil
 		reminderState = nil
@@ -338,6 +344,8 @@ local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("ADDON_LOADED")
 eventFrame:RegisterEvent("PLAYER_LOGIN")
 eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+eventFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
+eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 eventFrame:RegisterEvent("BAG_UPDATE_DELAYED")
 eventFrame:RegisterEvent("GET_ITEM_INFO_RECEIVED")
 if eventFrame.RegisterUnitEvent then
@@ -379,6 +387,13 @@ eventFrame:SetScript("OnEvent", function(_, event, arg1)
 		ns.Scan()
 	elseif event == "PLAYER_ENTERING_WORLD" then
 		invalidateBagScan()
+		ns.Scan()
+	elseif event == "PLAYER_REGEN_DISABLED" then
+		lastReminderTime = nil
+		if ns.HideScreenAlert then
+			ns.HideScreenAlert()
+		end
+	elseif event == "PLAYER_REGEN_ENABLED" then
 		ns.Scan()
 	elseif event == "UNIT_AURA" then
 		if arg1 == "player" then

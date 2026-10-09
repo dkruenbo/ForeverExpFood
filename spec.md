@@ -5,6 +5,7 @@ The addon helps players maximize XP from kills by tracking food that grants a 5%
 ## Features
 
 - Scans the player's bags in the background once per minute.
+- Suppresses reminders during combat, hides a visible alert when combat begins, and checks again when combat ends.
 - Detects qualifying food by its tooltip text, including the effect "experience gained from kills is increased by 5%." Mithril Head Trout is one example.
 - Detects the active effect from the "Well fed" buff whose tooltip says "Experience gained from kills increased by 5%."
 - Lets players choose reminder preferences during setup and change them later in an in-game options panel.

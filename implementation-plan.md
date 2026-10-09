@@ -42,6 +42,7 @@ Keep the initial implementation small; split files further only if the codebase 
    - Check once when the player enters the world or reloads the UI.
    - Recheck when carried bags change, and register player-only aura updates where supported so aura events can reuse the cached bag result.
    - Retain a one-minute periodic scan as a fallback for missed or unavailable events.
+   - Suppress reminders and hide visible screen alerts during combat; rescan immediately when combat ends.
    - Notify only when qualifying food is in bags and the matching buff is absent.
    - Track reminder state so repeated scans do not accidentally spam; apply the configured repeat behavior and interval.
 
@@ -70,6 +71,7 @@ Keep the initial implementation small; split files further only if the codebase 
 - Qualifying food in carried bags is detected from its tooltip effect; bank items are ignored.
 - A matching 5% kill-XP "Well fed" buff suppresses reminders, while unrelated buffs do not.
 - Checks run on login/reload, after bag changes, and at least once per minute.
+- No reminders are sent during combat; pending conditions are checked immediately after combat ends.
 - Players can choose preferences during first-run setup and change them in the options panel.
 - Chat and screen alerts can be toggled independently, and repeat behavior is configurable and persists across sessions.
 - Repeated scans do not cause reminders more frequently than the configured behavior allows.

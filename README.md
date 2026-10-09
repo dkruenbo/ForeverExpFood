@@ -10,6 +10,7 @@ A lightweight World of Warcraft Forever addon that helps you maintain the 5% kil
 - Optionally reminds you when no qualifying food is in your bags.
 - Provides a movable screen alert with custom text, duration, size, and color.
 - Supports snoozing reminders or dismissing the current reminder condition.
+- Suppresses reminders during combat and checks again when combat ends.
 - Includes localized interface text and tooltip matching for standard WoW locales.
 
 ## Install
