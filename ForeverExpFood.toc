@@ -1,0 +1,11 @@
+## Interface: 16001
+## Title: ForeverExpFood
+## Notes: Reminds you when XP food is available and its buff is inactive.
+## Author: ForeverExpFood
+## Version: 0.1.0
+## SavedVariables: ForeverExpFoodDB
+
+Locale.lua
+ScreenAlert.lua
+Core.lua
+Options.lua
